@@ -14,30 +14,33 @@
  * limitations under the License.
  */
 
-package cmd
+package temporal
 
 import (
+	"fmt"
+	"log/slog"
 	"os"
 
-	"github.com/spf13/cobra"
+	"github.com/rs/zerolog/log"
+	slogzerolog "github.com/samber/slog-zerolog/v2"
+	"go.temporal.io/sdk/client"
+	tLog "go.temporal.io/sdk/log"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:     "get-iplayer-workflow",
-	Short:   "Temporal workflow to download and sort stuff from the iPlayer",
-	Version: Version,
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+func New() (client.Client, error) {
+	hostPort := os.Getenv("TEMPORAL_ADDRESS")
+	if hostPort == "" {
+		hostPort = client.DefaultHostPort
 	}
-}
+	c, err := client.Dial(client.Options{
+		HostPort: hostPort,
+		Logger: tLog.NewStructuredLogger(slog.New(slogzerolog.Option{
+			Logger: &log.Logger,
+		}.NewZerologHandler())),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("unable to create temporal client: %w", err)
+	}
 
-func init() {
-	rootCmd.AddCommand(addWorkflowCmd())
+	return c, nil
 }

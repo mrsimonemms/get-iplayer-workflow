@@ -17,27 +17,28 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
 
+	"github.com/mrsimonemms/get-iplayer-workflow/pkg/temporal"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:     "get-iplayer-workflow",
-	Short:   "Temporal workflow to download and sort stuff from the iPlayer",
-	Version: Version,
-}
+func addWorkflowCmd() *cobra.Command {
+	// workflowCmd represents the workflow command
+	workflowCmd := &cobra.Command{
+		Use:   "workflow",
+		Short: "Run the workflow",
+		Run: func(cmd *cobra.Command, args []string) {
+			client, err := temporal.New()
+			if err != nil {
+				log.Fatal().Err(err).Msg("Unable to create Temporal client")
+			}
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+			defer client.Close()
+			fmt.Println("oi oi saveloy")
+		},
 	}
-}
 
-func init() {
-	rootCmd.AddCommand(addWorkflowCmd())
+	return workflowCmd
 }

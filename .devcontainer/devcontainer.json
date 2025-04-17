@@ -7,7 +7,8 @@
     "ghcr.io/devcontainers-contrib/features/gh-release:1": {
       "repo": "fission/fission",
       "binaryNames": "fission"
-    }
+    },
+    "ghcr.io/devcontainers-extra/features/temporal-cli:1": {}
   },
   "customizations": {
     "vscode": {
@@ -24,6 +25,7 @@
     "install-keda": "helm upgrade --atomic --cleanup-on-fail --create-namespace --install --namespace keda --repo https://kedacore.github.io/charts --reset-values --wait keda keda"
   },
   "containerEnv": {
-    "GIT_REPO": "github.com/mrsimonemms/get-iplayer-workflow"
+    "GIT_REPO": "github.com/mrsimonemms/get-iplayer-workflow",
+    "TEMPORAL_ADDRESS": "localhost:7233"
   }
 }

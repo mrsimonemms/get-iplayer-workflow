@@ -17,11 +17,11 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/mrsimonemms/get-iplayer-workflow/pkg/temporal"
+	"github.com/mrsimonemms/get-iplayer-workflow/pkg/workflows"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"go.temporal.io/sdk/worker"
 )
 
 func addWorkflowCmd() *cobra.Command {
@@ -36,7 +36,12 @@ func addWorkflowCmd() *cobra.Command {
 			}
 
 			defer client.Close()
-			fmt.Println("oi oi saveloy")
+
+			w := workflows.NewGetIplayerWorkflow(client)
+
+			if err := w.Run(worker.InterruptCh()); err != nil {
+				log.Fatal().Err(err).Msg("Failed to start workflow run")
+			}
 		},
 	}
 

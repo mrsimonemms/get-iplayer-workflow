@@ -3,7 +3,11 @@
   "image": "ghcr.io/mrsimonemms/devcontainers/full",
   "features": {
     "ghcr.io/mrsimonemms/devcontainers/cobra-cli:0": {},
-    "ghcr.io/guiyomh/features/goreleaser:0": {}
+    "ghcr.io/guiyomh/features/goreleaser:0": {},
+    "ghcr.io/devcontainers-contrib/features/gh-release:1": {
+      "repo": "fission/fission",
+      "binaryNames": "fission"
+    }
   },
   "customizations": {
     "vscode": {
@@ -12,7 +16,11 @@
     }
   },
   "postCreateCommand": {
-    "bootstrap": "ln -s $PWD/.cobra.yaml $HOME/.cobra.yaml && if [ ! -f \"go.mod\" ]; then go mod init \"github.com/mrsimonemms/get-iplayer-workflow\"; fi && if [ ! -f \"main.go\" ]; then cobra-cli init && go mod tidy; fi"
+    "bootstrap": "ln -s $PWD/.cobra.yaml $HOME/.cobra.yaml && if [ ! -f \"go.mod\" ]; then go mod init \"github.com/mrsimonemms/get-iplayer-workflow\"; fi && if [ ! -f \"main.go\" ]; then cobra-cli init && go mod tidy; fi",
+    "ensure-minikube": "minikube profile list | grep dev | grep Running || minikube start -p dev"
+  },
+  "postAttachCommand": {
+    "install-fission": "kubectl replace -k github.com/fission/fission/crds/v1 --force && helm upgrade --atomic --cleanup-on-fail --create-namespace --install --namespace fission --repo https://fission.github.io/fission-charts --reset-values --set serviceType=NodePort,routerServiceType=NodePort --wait fission fission-all"
   },
   "containerEnv": {
     "GIT_REPO": "github.com/mrsimonemms/get-iplayer-workflow"

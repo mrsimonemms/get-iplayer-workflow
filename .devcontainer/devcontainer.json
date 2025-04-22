@@ -20,7 +20,8 @@
     "ensure-minikube": "minikube profile list | grep dev | grep Running || minikube start -p dev"
   },
   "postAttachCommand": {
-    "install-fission": "kubectl replace -k github.com/fission/fission/crds/v1 --force && helm upgrade --atomic --cleanup-on-fail --create-namespace --install --namespace fission --repo https://fission.github.io/fission-charts --reset-values --set serviceType=NodePort,routerServiceType=NodePort --wait fission fission-all"
+    "install-fission": "kubectl replace -k github.com/fission/fission/crds/v1 --force && helm upgrade --atomic --cleanup-on-fail --create-namespace --install --namespace fission --repo https://fission.github.io/fission-charts --reset-values --set serviceType=NodePort,routerServiceType=NodePort --wait fission fission-all",
+    "install-keda": "helm upgrade --atomic --cleanup-on-fail --create-namespace --install --namespace keda --repo https://kedacore.github.io/charts --reset-values --wait keda keda"
   },
   "containerEnv": {
     "GIT_REPO": "github.com/mrsimonemms/get-iplayer-workflow"

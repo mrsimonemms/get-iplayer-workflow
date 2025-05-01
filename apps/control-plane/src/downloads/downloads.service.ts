@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Client } from '@temporalio/client';
+import { randomBytes } from 'node:crypto';
 import { URL } from 'node:url';
+
+import { WORKFLOW_CLIENT } from '../temporal/temporal.providers';
 
 interface IMatcher {
   regex: RegExp;
@@ -23,6 +27,29 @@ interface IMatcher {
 
 @Injectable()
 export class DownloadsService {
+  @Inject(WORKFLOW_CLIENT)
+  temporalClient: Client;
+
+  // Take a BBC iPlayer/Sounds URL and download it as a Temporal workflow
+  async downloadFromURL(inputURL: string) {
+    const pid = this.parseURLToPID(inputURL);
+
+    // Generate a random ID
+    const id = randomBytes(3).toString('hex');
+
+    await this.temporalClient.workflow.start('DownloadBBCProgramme', {
+      taskQueue: 'downloadByPID',
+      workflowId: `download-pid-${pid}-${id}`,
+      args: [
+        {
+          programmeID: pid,
+        },
+      ],
+    });
+
+    console.log({ pid });
+  }
+
   // Extract the BBC PID from a URL
   // @link https://en.wikipedia.org/wiki/BBC_Programme_Identifier
   parseURLToPID(inputURL: string): string {

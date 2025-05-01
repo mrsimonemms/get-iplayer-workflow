@@ -15,10 +15,12 @@
  */
 import { Module } from '@nestjs/common';
 
+import { TemporalModule } from '../temporal/temporal.module';
 import { DownloadsController } from './downloads.controller';
 import { DownloadsService } from './downloads.service';
 
 @Module({
+  imports: [TemporalModule],
   controllers: [DownloadsController],
   providers: [DownloadsService],
 })

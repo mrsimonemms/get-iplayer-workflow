@@ -13,7 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 
-@Controller('downloads')
-export class DownloadsController {}
+import { DownloadsService } from './downloads.service';
+
+@Controller('download')
+export class DownloadsController {
+  @Inject(DownloadsService)
+  private readonly downloadsService: DownloadsService;
+
+  @Get()
+  download() {
+    return this.downloadsService.downloadFromURL(
+      'https://www.bbc.co.uk/sounds/play/m0008bbc',
+    );
+  }
+}

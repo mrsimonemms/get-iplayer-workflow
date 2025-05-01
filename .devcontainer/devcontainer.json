@@ -8,7 +8,8 @@
     },
     "ghcr.io/devcontainers-extra/features/protoc:1": {},
     "ghcr.io/marcozac/devcontainer-features/buf:1": {},
-    "ghcr.io/devcontainers-extra/features/grpcurl-asdf:2": {}
+    "ghcr.io/devcontainers-extra/features/grpcurl-asdf:2": {},
+    "ghcr.io/devcontainers-extra/features/temporal-cli:1": {}
   },
   "customizations": {
     "vscode": {
@@ -23,7 +24,9 @@
     }
   },
   "containerEnv": {
-    "GIT_REPO": "github.com/mrsimonemms/get-iplayer-workflow"
+    "GIT_REPO": "github.com/mrsimonemms/get-iplayer-workflow",
+    "TEMPORAL_ADDRESS": "localhost:4101",
+    "TEMPORAL_CLI_ADDRESS": "localhost:4101"
   },
   "onCreateCommand": {
     "linkBufBinary": "sudo rm /usr/local/bin/buf && sudo ln -s /usr/local/lib/buf/buf/bin/buf /usr/local/bin/buf"

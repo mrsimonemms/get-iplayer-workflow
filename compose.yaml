@@ -2,28 +2,36 @@ services:
   ########################
   # Third-party services #
   ########################
-  gobblr:
-    image: ghcr.io/mrsimonemms/gobblr
+  temporal:
+    image: temporalio/auto-setup:${TEMPORAL_VERSION:-latest}
     environment:
-      GOBBLR_DATABASE: app
-      GOBBLR_HOST: mysql
-      GOBBLR_PASSWORD: password
-      GOBBLR_USERNAME: app
-    ports:
-      - 4001:5670
-    links:
-      - mysql
+      DB: mysql8
+      DB_PORT: 3306
+      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
+      MYSQL_PWD: password
+      MYSQL_SEEDS: temporal-mysql
+      MYSQL_USER: root
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CLI_ADDRESS: temporal:7233
+    depends_on:
+      - temporal-mysql
     volumes:
-      - ./dev/data:/app/data
-    restart: on-failure
-    command: db sql mysql --run
+      - ./dev/temporal:/etc/temporal/config/dynamicconfig
+    ports:
+      - 4101:7233
 
-  mysql:
+  temporal-mysql:
     image: mysql:8
     environment:
-      MYSQL_DATABASE: app
-      MYSQL_RANDOM_ROOT_PASSWORD: "true"
-      MYSQL_PASSWORD: password
-      MYSQL_USER: app
+      MYSQL_ROOT_PASSWORD: password
     ports:
-      - 4000:3306
+      - 4102:3306
+
+  temporal-ui:
+    image: temporalio/ui:${TEMPORAL_UI_VERSION:-latest}
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    depends_on:
+      - temporal
+    ports:
+      - 4100:8080

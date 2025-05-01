@@ -18,6 +18,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 import config from './config';
+import { DownloadsModule } from './downloads/downloads.module';
 import { HealthModule } from './health/health.module';
 import { MetricsController } from './health/metrics.controller';
 import { TemporalModule } from './temporal/temporal.module';
@@ -33,6 +34,7 @@ import { TemporalModule } from './temporal/temporal.module';
       controller: MetricsController,
     }),
 
+    DownloadsModule,
     HealthModule,
     TemporalModule,
   ],

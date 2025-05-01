@@ -1,0 +1,19 @@
+{
+  "template": "https://github.com/mrsimonemms/new",
+  "commit": "da19260a4de21b166bdcab7a1331ad4b40a16729",
+  "checkout": "main",
+  "context": {
+    "cookiecutter": {
+      "project_name": "get-iplayer-workflow",
+      "description": "Temporal workflow to download and sort stuff from the iPlayer",
+      "author": "Simon Emms <simon@simonemms.com>",
+      "repo": "github.com/mrsimonemms/get-iplayer-workflow",
+      "_template": "https://github.com/mrsimonemms/new",
+      "_commit": "da19260a4de21b166bdcab7a1331ad4b40a16729"
+    }
+  },
+  "directory": "monorepo",
+  "skip": [
+    ".git"
+  ]
+}

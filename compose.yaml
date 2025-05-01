@@ -6,7 +6,9 @@ services:
       target: dev
       args:
         APP: control-plane
-    environment: {}
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CONNECTION_TIMEOUT: 60s
     ports:
       - 9000:3000
     restart: on-failure

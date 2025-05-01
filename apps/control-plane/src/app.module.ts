@@ -20,6 +20,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import config from './config';
 import { HealthModule } from './health/health.module';
 import { MetricsController } from './health/metrics.controller';
+import { TemporalModule } from './temporal/temporal.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MetricsController } from './health/metrics.controller';
     }),
 
     HealthModule,
+    TemporalModule,
   ],
 })
 export class AppModule {}

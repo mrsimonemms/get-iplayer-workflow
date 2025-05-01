@@ -13,8 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import logger from './logger';
-import server from './server';
-import temporal from './temporal';
+import { Module } from '@nestjs/common';
 
-export default [logger, server, temporal];
+import { temporalProviders } from './temporal.providers';
+import { TemporalService } from './temporal.service';
+
+@Module({
+  imports: [],
+  providers: [...temporalProviders, TemporalService],
+  exports: [...temporalProviders, TemporalService],
+})
+export class TemporalModule {}

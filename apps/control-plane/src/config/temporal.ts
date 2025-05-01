@@ -13,8 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import logger from './logger';
-import server from './server';
-import temporal from './temporal';
+import { registerAs } from '@nestjs/config';
+import { ConnectionOptions } from '@temporalio/client';
+import { Duration } from '@temporalio/common';
 
-export default [logger, server, temporal];
+export default registerAs(
+  'temporal',
+  (): ConnectionOptions => ({
+    address: process.env.TEMPORAL_ADDRESS,
+    apiKey: process.env.TEMPORAL_KEY,
+    connectTimeout: process.env.TEMPORAL_CONNECTION_TIMEOUT as Duration,
+    tls: process.env.TEMPORAL_TLS === 'true',
+    metadata: {
+      'temporal-namespace': process.env.TEMPORAL_NAMESPACE ?? 'default',
+    },
+  }),
+);

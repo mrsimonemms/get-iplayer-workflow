@@ -1,4 +1,22 @@
 services:
+  control-plane:
+    build:
+      context: .
+      dockerfile: ./apps/node.Dockerfile
+      target: dev
+      args:
+        APP: control-plane
+    environment: {}
+    ports:
+      - 9000:3000
+    restart: on-failure
+    volumes:
+      - ./apps:/home/node/root/apps
+    links:
+      - temporal
+    depends_on:
+      - temporal-ui
+
   ########################
   # Third-party services #
   ########################

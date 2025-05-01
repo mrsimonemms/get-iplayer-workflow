@@ -13,7 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { URL } from 'node:url';
+
+interface IMatcher {
+  regex: RegExp;
+  extractor?: (url: URL) => string;
+}
 
 @Injectable()
-export class DownloadsService {}
+export class DownloadsService {
+  // Extract the BBC PID from a URL
+  // @link https://en.wikipedia.org/wiki/BBC_Programme_Identifier
+  parseURLToPID(inputURL: string): string {
+    const pidRegex = '[a-z0-9]{7,}';
+    const matchers: IMatcher[] = [
+      // Order is important
+      {
+        regex: new RegExp(`^${pidRegex}-[\\w]+-\\d-(${pidRegex})`),
+        extractor(url: URL): string {
+          return url.searchParams.get('seriesId') ?? '';
+        },
+      },
+      {
+        regex: new RegExp(`^/sounds/play/(${pidRegex})`),
+      },
+      {
+        regex: new RegExp(`^/programmes/(${pidRegex})`),
+      },
+      {
+        regex: new RegExp(`^/iplayer/episode/(${pidRegex})`),
+      },
+    ];
+
+    const url = URL.parse(inputURL);
+    if (!url) {
+      throw new BadRequestException('Cannot parse as URL');
+    }
+
+    const matcher = matchers.find((m) => {
+      const s = m.extractor ? m.extractor(url) : url.pathname;
+      return m.regex.test(s);
+    });
+
+    const inputString = matcher?.extractor
+      ? matcher.extractor(url)
+      : url.pathname;
+
+    const matches = inputString.match(matcher?.regex ?? '');
+
+    if (!matches || !matches[1]) {
+      throw new Error('Cannot extract the programme ID');
+    }
+
+    return matches[1];
+  }
+}

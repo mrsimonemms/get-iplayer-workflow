@@ -11,6 +11,8 @@ Thumbs.db
 .envrc
 go.work.sum
 
+dev/gotify_data
+
 ######################
 ## gRPC conventions ##
 ######################

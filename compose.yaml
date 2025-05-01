@@ -2,6 +2,17 @@ services:
   ########################
   # Third-party services #
   ########################
+  gotify:
+    image: gotify/server
+    environment:
+      GOTIFY_DEFAULTUSER_NAME: admin
+      GOTIFY_DEFAULTUSER_PASS: admin
+    ports:
+      - 4000:80
+    user: "1000"
+    volumes:
+      - ./dev/gotify_data:/app/data
+
   temporal:
     image: temporalio/auto-setup:${TEMPORAL_VERSION:-latest}
     environment:

@@ -31,23 +31,27 @@ export class DownloadsService {
   temporalClient: Client;
 
   // Take a BBC iPlayer/Sounds URL and download it as a Temporal workflow
-  async downloadFromURL(inputURL: string) {
+  async downloadFromURL(inputURL: string): Promise<string> {
+    // Extract the programme ID from the URL
     const pid = this.parseURLToPID(inputURL);
 
     // Generate a random ID
     const id = randomBytes(3).toString('hex');
 
-    await this.temporalClient.workflow.start('DownloadBBCProgramme', {
-      taskQueue: 'downloadByPID',
-      workflowId: `download-pid-${pid}-${id}`,
-      args: [
-        {
-          programmeID: pid,
-        },
-      ],
-    });
+    const workflow = await this.temporalClient.workflow.start(
+      'DownloadBBCProgramme',
+      {
+        taskQueue: 'downloadByPID',
+        workflowId: `download-pid-${pid}-${id}`,
+        args: [
+          {
+            programmeID: pid,
+          },
+        ],
+      },
+    );
 
-    console.log({ pid });
+    return workflow.workflowId;
   }
 
   // Extract the BBC PID from a URL

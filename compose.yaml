@@ -17,7 +17,26 @@ services:
     links:
       - temporal
     depends_on:
+      - downloader
       - temporal-ui
+
+  downloader:
+    build:
+      context: .
+      dockerfile: ./apps/downloader/Dockerfile
+      args:
+        APP: downloader
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    restart: on-failure
+    links:
+      - temporal
+    depends_on:
+      - temporal-ui
+    develop:
+      watch:
+        - path: ./apps/downloader
+          action: rebuild
 
   ########################
   # Third-party services #

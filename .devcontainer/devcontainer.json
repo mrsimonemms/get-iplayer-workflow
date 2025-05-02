@@ -24,6 +24,7 @@
     }
   },
   "containerEnv": {
+    "COMPOSE_BAKE": "true",
     "GIT_REPO": "github.com/mrsimonemms/get-iplayer-workflow",
     "TEMPORAL_ADDRESS": "localhost:4101",
     "TEMPORAL_CLI_ADDRESS": "localhost:4101"

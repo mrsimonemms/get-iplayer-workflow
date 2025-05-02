@@ -16,6 +16,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { WORKFLOW_CLIENT } from '../temporal/temporal.providers';
 import { DownloadsService } from './downloads.service';
 
 describe('DownloadsService', () => {
@@ -24,7 +25,17 @@ describe('DownloadsService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [DownloadsService],
-    }).compile();
+    })
+      .useMocker((token) => {
+        if (token === WORKFLOW_CLIENT) {
+          return {
+            workflow: {
+              start: jest.fn(),
+            },
+          };
+        }
+      })
+      .compile();
 
     service = module.get<DownloadsService>(DownloadsService);
 

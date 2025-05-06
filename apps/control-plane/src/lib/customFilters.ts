@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Module } from '@nestjs/common';
+import { Catch, ExceptionFilter } from '@nestjs/common';
+import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets';
 
-import { MessagingModule } from '../messaging/messaging.module';
-import { TemporalModule } from '../temporal/temporal.module';
-import { DownloadsController } from './downloads.controller';
-import { DownloadsGateway } from './downloads.gateway';
-import { DownloadsService } from './downloads.service';
-
-@Module({
-  imports: [MessagingModule, TemporalModule],
-  controllers: [DownloadsController],
-  providers: [DownloadsGateway, DownloadsService],
-})
-export class DownloadsModule {}
+@Catch(WsException)
+export class WsExceptionFilter
+  extends BaseWsExceptionFilter
+  implements ExceptionFilter {}

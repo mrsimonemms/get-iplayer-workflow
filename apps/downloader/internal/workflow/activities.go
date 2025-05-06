@@ -26,17 +26,23 @@ import (
 	"strings"
 
 	"github.com/mrsimonemms/get-iplayer-workflow/apps/downloader/internal/config"
+	"github.com/nats-io/nats.go"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/log"
 )
 
 type streamOutput struct {
 	logger     log.Logger
+	nc         *nats.Conn
 	workflowID string
 }
 
 func (s *streamOutput) Write(p []byte) (n int, err error) {
 	s.logger.Debug("New data received", "msg", string(p), "workflowID", s.workflowID)
+	if err := s.nc.Publish(fmt.Sprintf("%s_msg", s.workflowID), p); err != nil {
+		s.logger.Error("Error emitting message to NATS", "error", err)
+		return 0, err
+	}
 	return len(p), nil
 }
 
@@ -48,6 +54,14 @@ func DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult
 		logger.Error("Error loading config", "error", err)
 		return nil, fmt.Errorf("error loading config: %w", err)
 	}
+
+	logger.Debug("Connecting to NATS server")
+	nc, err := nats.Connect(cfg.NATS.URL)
+	if err != nil {
+		logger.Error("Unable to connect to NATS server", "error", err)
+		return nil, fmt.Errorf("unable to connect to nats server: %w", err)
+	}
+	defer nc.Close()
 
 	logger.Info("Downloading programme by PID", "pid", download.ProgrammeID)
 
@@ -69,6 +83,7 @@ func DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult
 
 	so := &streamOutput{
 		logger:     logger,
+		nc:         nc,
 		workflowID: workflowID,
 	}
 	cmd := exec.CommandContext(ctx, "get_iplayer", args...)

@@ -20,8 +20,13 @@ import (
 	"fmt"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/nats-io/nats.go"
 	"go.temporal.io/sdk/client"
 )
+
+type NATS struct {
+	URL string `env:"URL"`
+}
 
 type Temporal struct {
 	Address   string `env:"ADDRESS"`
@@ -29,6 +34,7 @@ type Temporal struct {
 }
 
 type Config struct {
+	NATS     `envPrefix:"NATS_"`
 	Temporal `envPrefix:"TEMPORAL_"`
 
 	OutputDir string `env:"OUTPUT_DIR,required"`
@@ -36,6 +42,9 @@ type Config struct {
 
 func Load() (*Config, error) {
 	cfg := Config{
+		NATS: NATS{
+			URL: nats.DefaultURL,
+		},
 		Temporal: Temporal{
 			Address:   client.DefaultHostPort,
 			Namespace: client.DefaultNamespace,

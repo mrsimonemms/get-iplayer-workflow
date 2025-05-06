@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import logger from './logger';
-import nats from './nats';
-import server from './server';
-import temporal from './temporal';
+import { Module } from '@nestjs/common';
 
-export default [logger, nats, server, temporal];
+import { messagingProviders } from './messaging.providers';
+import { MessagingService } from './messaging.service';
+
+@Module({
+  providers: [...messagingProviders, MessagingService],
+  exports: [...messagingProviders, MessagingService],
+})
+export class MessagingModule {}

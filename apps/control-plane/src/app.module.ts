@@ -21,6 +21,7 @@ import config from './config';
 import { DownloadsModule } from './downloads/downloads.module';
 import { HealthModule } from './health/health.module';
 import { MetricsController } from './health/metrics.controller';
+import { MessagingModule } from './messaging/messaging.module';
 import { TemporalModule } from './temporal/temporal.module';
 
 @Module({
@@ -37,6 +38,7 @@ import { TemporalModule } from './temporal/temporal.module';
     DownloadsModule,
     HealthModule,
     TemporalModule,
+    MessagingModule,
   ],
 })
 export class AppModule {}

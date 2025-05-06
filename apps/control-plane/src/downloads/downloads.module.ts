@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 import { Module } from '@nestjs/common';
+import { MessagingModule } from 'src/messaging/messaging.module';
 
 import { TemporalModule } from '../temporal/temporal.module';
 import { DownloadsController } from './downloads.controller';
 import { DownloadsService } from './downloads.service';
 
 @Module({
-  imports: [TemporalModule],
+  imports: [MessagingModule, TemporalModule],
   controllers: [DownloadsController],
   providers: [DownloadsService],
 })

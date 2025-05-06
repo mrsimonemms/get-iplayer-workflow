@@ -13,9 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import logger from './logger';
-import nats from './nats';
-import server from './server';
-import temporal from './temporal';
+import { ConnectionOptions } from '@nats-io/nats-core';
+import { connect } from '@nats-io/transport-node';
+import { Provider } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-export default [logger, nats, server, temporal];
+export const CONNECTION = Symbol('CONNECTION');
+
+export const messagingProviders: Provider[] = [
+  {
+    inject: [ConfigService],
+    provide: CONNECTION,
+    useFactory: (cfg: ConfigService) => {
+      const opts: ConnectionOptions = {
+        servers: cfg.getOrThrow('nats.url'),
+      };
+      return connect(opts);
+    },
+  },
+];

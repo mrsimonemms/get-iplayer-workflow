@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import logger from './logger';
-import nats from './nats';
-import server from './server';
-import temporal from './temporal';
+import { registerAs } from '@nestjs/config';
 
-export default [logger, nats, server, temporal];
+export default registerAs('nats', () => ({
+  url: process.env.NATS_URL,
+}));

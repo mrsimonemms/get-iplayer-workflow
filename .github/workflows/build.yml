@@ -146,8 +146,13 @@ jobs:
   e2e_control-plane:
     runs-on: ubuntu-latest
     env:
+      NATS_URL: nats://localhost:4222
       TEMPORAL_ADDRESS: 127.0.0.1:7233
-    services: {}
+    services:
+      nats:
+        image: nats
+        ports:
+          - 4222:4222
     steps:
       - uses: actions/checkout@v4
 

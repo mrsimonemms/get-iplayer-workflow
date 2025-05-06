@@ -30,6 +30,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import loggerConfig from './config/logger';
+import { ISocketConfig } from './config/socket';
+import { WsExceptionFilter } from './lib/customFilters';
+import { RedisIoAdapter } from './lib/redisAdapter';
 
 const logger = new Logger('bootstrap');
 
@@ -48,6 +51,7 @@ async function bootstrap() {
       type: VersioningType.URI,
       defaultVersion: '1',
     })
+    .useGlobalFilters(new WsExceptionFilter())
     .useGlobalPipes(
       new ValidationPipe({
         transform: true,
@@ -69,6 +73,15 @@ async function bootstrap() {
   const documentFactory = SwaggerModule.createDocument(app, docBuilderConfig);
 
   SwaggerModule.setup('api', app, documentFactory);
+
+  // Configure Redis for SocketIO
+  const socketRedis = config.getOrThrow<ISocketConfig>('socket');
+  if (socketRedis.redis.enabled) {
+    logger.debug('Connect socket redis adapter');
+    const redisIoAdapter = new RedisIoAdapter(app);
+    await redisIoAdapter.connectToRedis(socketRedis.redis.opts);
+    app.useWebSocketAdapter(redisIoAdapter);
+  }
 
   await app.listen(
     config.getOrThrow<number>('server.port'),

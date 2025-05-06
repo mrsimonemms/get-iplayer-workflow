@@ -16,6 +16,13 @@
 
 package workflow
 
+import (
+	"fmt"
+
+	"github.com/nats-io/nats.go"
+	"go.temporal.io/sdk/log"
+)
+
 type Download struct {
 	ProgrammeID string
 }
@@ -30,4 +37,19 @@ type DownloadedProgramme struct {
 	ProgrammeID string
 	SavePath    string
 	File        string
+}
+
+type streamOutput struct {
+	logger     log.Logger
+	nc         *nats.Conn
+	workflowID string
+}
+
+func (s *streamOutput) Write(p []byte) (n int, err error) {
+	s.logger.Debug("New data received", "msg", string(p), "workflowID", s.workflowID)
+	if err := s.nc.Publish(fmt.Sprintf("log.%s", s.workflowID), p); err != nil {
+		s.logger.Error("Error emitting message to NATS", "error", err)
+		return 0, err
+	}
+	return len(p), nil
 }

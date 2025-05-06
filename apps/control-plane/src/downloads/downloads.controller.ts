@@ -15,7 +15,6 @@
  */
 import { Controller, Get, Inject } from '@nestjs/common';
 
-import { MessagingService } from '../messaging/messaging.service';
 import { DownloadsService } from './downloads.service';
 
 @Controller('download')
@@ -23,20 +22,11 @@ export class DownloadsController {
   @Inject(DownloadsService)
   private readonly downloadsService: DownloadsService;
 
-  @Inject(MessagingService)
-  messagingClient: MessagingService;
-
   @Get()
   async download() {
     const workflowId = await this.downloadsService.downloadFromURL(
       'https://www.bbc.co.uk/sounds/play/m0008bbc',
     );
-
-    // @todo(sje): put this in a gateway
-    // const sub = this.messagingClient.subscribe(`${workflowId}_msg`);
-    // for await (const m of sub) {
-    //   console.log(`${m.string()}`);
-    // }
 
     return {
       workflowId,

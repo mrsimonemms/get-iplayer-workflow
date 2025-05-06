@@ -13,17 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Module } from '@nestjs/common';
+import { registerAs } from '@nestjs/config';
+import { RedisClientOptions } from '@redis/client';
 
-import { MessagingModule } from '../messaging/messaging.module';
-import { TemporalModule } from '../temporal/temporal.module';
-import { DownloadsController } from './downloads.controller';
-import { DownloadsGateway } from './downloads.gateway';
-import { DownloadsService } from './downloads.service';
+export interface ISocketConfig {
+  redis: {
+    enabled: boolean;
+    opts: RedisClientOptions;
+  };
+}
 
-@Module({
-  imports: [MessagingModule, TemporalModule],
-  controllers: [DownloadsController],
-  providers: [DownloadsGateway, DownloadsService],
-})
-export class DownloadsModule {}
+export default registerAs('socket', (): ISocketConfig => {
+  const enabled = process.env.SOCKET_REDIS_ENABLED === 'true';
+  const url = process.env.SOCKET_REDIS_URL;
+
+  if (enabled && !url) {
+    throw new Error('SOCKET_REDIS_URL envvar not set');
+  }
+
+  return {
+    redis: {
+      enabled,
+      opts: {
+        url,
+      },
+    },
+  };
+});

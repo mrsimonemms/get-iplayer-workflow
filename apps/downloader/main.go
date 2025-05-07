@@ -21,6 +21,7 @@ import (
 
 	"github.com/mrsimonemms/get-iplayer-workflow/apps/downloader/internal/config"
 	"github.com/mrsimonemms/get-iplayer-workflow/apps/downloader/internal/workflow"
+	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 	slogzerolog "github.com/samber/slog-zerolog/v2"
 	"go.temporal.io/sdk/client"
@@ -37,7 +38,15 @@ func main() {
 	host := cfg.Temporal.Address
 	namespace := cfg.Temporal.Namespace
 
-	c, err := client.Dial(client.Options{
+	log.Debug().Msg("Connecting to NATS server")
+	natsClient, err := nats.Connect(cfg.NATS.URL)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Unable to connect to NATS server")
+	}
+	defer natsClient.Close()
+
+	log.Debug().Msg("Connecting to Temporal server")
+	temporalClient, err := client.Dial(client.Options{
 		HostPort:  host,
 		Namespace: namespace,
 		Logger: tLog.NewStructuredLogger(slog.New(slogzerolog.Option{
@@ -47,13 +56,14 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Unable to create Temporal client")
 	}
-	defer c.Close()
+	defer temporalClient.Close()
 
-	w := worker.New(c, "downloadByPID", worker.Options{})
+	w := worker.New(temporalClient, "downloadByPID", worker.Options{})
 
 	w.RegisterWorkflow(workflow.DownloadBBCProgramme)
 
-	w.RegisterActivity(workflow.DownloadByPID)
+	activities := workflow.NewActivities(natsClient)
+	w.RegisterActivity(activities)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatal().Err(err).Msg("Unable to start worker")

@@ -30,7 +30,11 @@ import (
 	"go.temporal.io/sdk/activity"
 )
 
-func DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult, error) {
+type activities struct {
+	nc *nats.Conn
+}
+
+func (a *activities) DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult, error) {
 	logger := activity.GetLogger(ctx)
 
 	cfg, err := config.Load()
@@ -38,14 +42,6 @@ func DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult
 		logger.Error("Error loading config", "error", err)
 		return nil, fmt.Errorf("error loading config: %w", err)
 	}
-
-	logger.Debug("Connecting to NATS server")
-	nc, err := nats.Connect(cfg.NATS.URL)
-	if err != nil {
-		logger.Error("Unable to connect to NATS server", "error", err)
-		return nil, fmt.Errorf("unable to connect to nats server: %w", err)
-	}
-	defer nc.Close()
 
 	logger.Info("Downloading programme by PID", "pid", download.ProgrammeID)
 
@@ -67,7 +63,7 @@ func DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult
 
 	so := &streamOutput{
 		logger:     logger,
-		nc:         nc,
+		nc:         a.nc,
 		workflowID: workflowID,
 	}
 	cmd := exec.CommandContext(ctx, "get_iplayer", args...)
@@ -104,4 +100,10 @@ func DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult
 		SavePath:    savePath,
 		Files:       files,
 	}, nil
+}
+
+func NewActivities(nc *nats.Conn) *activities {
+	return &activities{
+		nc: nc,
+	}
 }

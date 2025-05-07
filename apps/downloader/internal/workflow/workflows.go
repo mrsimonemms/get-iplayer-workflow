@@ -38,9 +38,11 @@ func DownloadBBCProgramme(ctx workflow.Context, download Download) (any, error) 
 		},
 	})
 
+	var a *activities
+
 	logger.Debug("Downloading programme")
 	var downloadByPIDResult *DownloadByPIDResult
-	if err := workflow.ExecuteActivity(ctx, DownloadByPID, download).Get(ctx, &downloadByPIDResult); err != nil {
+	if err := workflow.ExecuteActivity(ctx, a.DownloadByPID, download).Get(ctx, &downloadByPIDResult); err != nil {
 		logger.Error("Error downloading programme", "pid", download.ProgrammeID, "error", err)
 		return nil, fmt.Errorf("error downloading programme: %w", err)
 	}

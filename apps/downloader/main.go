@@ -68,6 +68,7 @@ func main() {
 	w := worker.New(temporalClient, "downloadByPID", worker.Options{})
 
 	w.RegisterWorkflow(workflow.DownloadBBCProgramme)
+	w.RegisterWorkflow(workflow.ParseDownloadedProgramme)
 
 	activities := workflow.NewActivities(natsClient, cfg)
 	w.RegisterActivity(activities)

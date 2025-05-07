@@ -39,6 +39,8 @@ type DownloadedProgramme struct {
 	File        string
 }
 
+type UploadedProgramme struct{}
+
 type streamOutput struct {
 	logger     log.Logger
 	nc         *nats.Conn

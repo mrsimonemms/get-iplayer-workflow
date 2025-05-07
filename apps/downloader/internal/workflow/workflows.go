@@ -47,5 +47,56 @@ func DownloadBBCProgramme(ctx workflow.Context, download Download) (any, error) 
 		return nil, fmt.Errorf("error downloading programme: %w", err)
 	}
 
+	// Invoke the child workflows in parallel
+	futures := map[workflow.Context]workflow.ChildWorkflowFuture{}
+	for i, f := range downloadByPIDResult.Files {
+		childCtx := workflow.WithChildOptions(ctx, workflow.ChildWorkflowOptions{
+			WorkflowTaskTimeout: time.Hour,
+			WorkflowID:          fmt.Sprintf("%s_parse_%d", workflow.GetInfo(ctx).WorkflowExecution.ID, i),
+		})
+
+		file := DownloadedProgramme{
+			ProgrammeID: downloadByPIDResult.ProgrammeID,
+			SavePath:    downloadByPIDResult.SavePath,
+			File:        f,
+		}
+		futures[childCtx] = workflow.ExecuteChildWorkflow(childCtx, ParseDownloadedProgramme, file)
+	}
+
+	// Now the child workflows are running, wait for the results
+
+	return nil, nil
+}
+
+func ParseDownloadedProgramme(ctx workflow.Context, programme DownloadedProgramme) (any, error) {
+	logger := workflow.GetLogger(ctx)
+	logger.Info("Parsing downloaded BBC programme", "pid", programme.ProgrammeID)
+
+	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: time.Hour,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    time.Second,
+			BackoffCoefficient: 2.0,
+			MaximumInterval:    time.Minute * 5,
+			MaximumAttempts:    3,
+		},
+	})
+
+	var a *activities
+
+	// Upload to S3 bucket
+	logger.Debug("Uploading programme to S3 bucket")
+	var uploadedResult *UploadedProgramme
+	if err := workflow.ExecuteActivity(ctx, a.UploadFileToS3Bucket, programme).Get(ctx, &uploadedResult); err != nil {
+		logger.Error("Error uploading programme", "pid", programme.ProgrammeID, "error", err)
+		return nil, fmt.Errorf("error uploading programme: %w", err)
+	}
+
+	// Convert file format
+
+	// Update the audio headers
+
+	// Upload to target location
+
 	return nil, nil
 }

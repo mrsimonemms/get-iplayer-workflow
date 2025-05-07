@@ -22,6 +22,7 @@ import (
 	"github.com/mrsimonemms/get-iplayer-workflow/apps/downloader/internal/config"
 	"github.com/mrsimonemms/get-iplayer-workflow/apps/downloader/internal/workflow"
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	slogzerolog "github.com/samber/slog-zerolog/v2"
 	"go.temporal.io/sdk/client"
@@ -34,6 +35,12 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Unable to load config")
 	}
+
+	logLevel, err := zerolog.ParseLevel(cfg.LogLevel)
+	if err != nil {
+		log.Fatal().Err(err).Str("logLevel", cfg.LogLevel).Msg("Unknown log level")
+	}
+	zerolog.SetGlobalLevel(logLevel)
 
 	host := cfg.Temporal.Address
 	namespace := cfg.Temporal.Namespace

@@ -32,6 +32,7 @@ services:
       args:
         APP: downloader
     environment:
+      LOG_LEVEL: trace
       NATS_URL: nats://nats:4222
       TEMPORAL_ADDRESS: temporal:7233
     restart: on-failure

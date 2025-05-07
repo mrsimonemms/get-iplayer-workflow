@@ -13,23 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Controller, Get, Inject } from '@nestjs/common';
 
-import { DownloadsService } from './downloads.service';
+package workflow
 
-@Controller('download')
-export class DownloadsController {
-  @Inject(DownloadsService)
-  private readonly downloadsService: DownloadsService;
+import (
+	"strconv"
+	"strings"
+)
 
-  @Get()
-  async download() {
-    const workflowId = await this.downloadsService.downloadFromURL(
-      'https://www.bbc.co.uk/sounds/play/m0028kwg',
-    );
+// Convert a number to a string and pad with 0s if less than 10
+func leftPad(i int) string {
+	var x string
 
-    return {
-      workflowId,
-    };
-  }
+	if i < 10 {
+		x += "0"
+	}
+
+	x += strconv.Itoa(i)
+
+	return x
+}
+
+// Strip any non-alphanumeric characters from the string
+func removeNonAlnum(s string) string {
+	var result strings.Builder
+	for i := range len(s) {
+		b := s[i]
+		if ('a' <= b && b <= 'z') ||
+			('A' <= b && b <= 'Z') ||
+			('0' <= b && b <= '9') ||
+			b == ' ' {
+			result.WriteByte(b)
+		}
+	}
+	return result.String()
 }

@@ -20,11 +20,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/minio/minio-go/v7"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
-func DownloadBBCProgramme(ctx workflow.Context, download Download) (any, error) {
+func DownloadBBCProgramme(ctx workflow.Context, download Download) (*DownloadBBCProgrammeResult, error) {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Downloading BBC programme", "pid", download.ProgrammeID)
 
@@ -48,11 +49,12 @@ func DownloadBBCProgramme(ctx workflow.Context, download Download) (any, error) 
 	}
 
 	// Invoke the child workflows in parallel
+	parentWorkflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 	futures := map[workflow.Context]workflow.ChildWorkflowFuture{}
 	for i, f := range downloadByPIDResult.Files {
 		childCtx := workflow.WithChildOptions(ctx, workflow.ChildWorkflowOptions{
 			WorkflowTaskTimeout: time.Hour,
-			WorkflowID:          fmt.Sprintf("%s_parse_%d", workflow.GetInfo(ctx).WorkflowExecution.ID, i),
+			WorkflowID:          fmt.Sprintf("%s_parse_%d", parentWorkflowID, i),
 		})
 
 		file := DownloadedProgramme{
@@ -60,15 +62,24 @@ func DownloadBBCProgramme(ctx workflow.Context, download Download) (any, error) 
 			SavePath:    downloadByPIDResult.SavePath,
 			File:        f,
 		}
-		futures[childCtx] = workflow.ExecuteChildWorkflow(childCtx, ParseDownloadedProgramme, file)
+		futures[childCtx] = workflow.ExecuteChildWorkflow(childCtx, ParseDownloadedProgramme, file, parentWorkflowID)
 	}
 
 	// Now the child workflows are running, wait for the results
+	for ctx, workflow := range futures {
+		var result *ParseDownloadedProgrammeResult
+		if err := workflow.Get(ctx, &result); err != nil {
+			logger.Error("Error parsing download", "error", err)
+			return nil, fmt.Errorf("error parsing download: %w", err)
+		}
 
-	return nil, nil
+		fmt.Printf("%+v\n", result)
+	}
+
+	return &DownloadBBCProgrammeResult{}, nil
 }
 
-func ParseDownloadedProgramme(ctx workflow.Context, programme DownloadedProgramme) (any, error) {
+func ParseDownloadedProgramme(ctx workflow.Context, programme DownloadedProgramme, parentWorkflowID string) (*ParseDownloadedProgrammeResult, error) {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Parsing downloaded BBC programme", "pid", programme.ProgrammeID)
 
@@ -84,19 +95,29 @@ func ParseDownloadedProgramme(ctx workflow.Context, programme DownloadedProgramm
 
 	var a *activities
 
+	// Get file name
+	logger.Debug("Generating programme name")
+	var programmeNameResult *ProgrammeNameResult
+	if err := workflow.ExecuteActivity(ctx, a.GenerateProgrammeName, programme, parentWorkflowID).Get(ctx, &programmeNameResult); err != nil {
+		logger.Error("Error generating programme name", "pid", programme.ProgrammeID, "error", err)
+		return nil, fmt.Errorf("error generating programme name: %w", err)
+	}
+	programme.TargetName = programmeNameResult.Name
+
 	// Upload to S3 bucket
 	logger.Debug("Uploading programme to S3 bucket")
-	var uploadedResult *UploadedProgramme
-	if err := workflow.ExecuteActivity(ctx, a.UploadFileToS3Bucket, programme).Get(ctx, &uploadedResult); err != nil {
+	var uploadedResult *minio.UploadInfo
+	if err := workflow.ExecuteActivity(ctx, a.UploadFileToS3Bucket, programme, parentWorkflowID).Get(ctx, &uploadedResult); err != nil {
 		logger.Error("Error uploading programme", "pid", programme.ProgrammeID, "error", err)
 		return nil, fmt.Errorf("error uploading programme: %w", err)
 	}
-
-	// Convert file format
 
 	// Update the audio headers
 
 	// Upload to target location
 
-	return nil, nil
+	return &ParseDownloadedProgrammeResult{
+		ProgrammeID: programme.ProgrammeID,
+		Bucket:      uploadedResult,
+	}, nil
 }

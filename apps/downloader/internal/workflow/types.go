@@ -19,13 +19,58 @@ package workflow
 import (
 	"fmt"
 
+	"github.com/minio/minio-go/v7"
 	"github.com/nats-io/nats.go"
 	"go.temporal.io/sdk/log"
 )
 
+type BBCProgrammeAPI struct {
+	Programme struct {
+		Position     int    `json:"position"`
+		Title        string `json:"title"`
+		DisplayTitle struct {
+			Title string `json:"title"`
+		} `json:"display_title"`
+		Parent struct {
+			Programme struct {
+				Position int    `json:"position"`
+				Title    string `json:"title"`
+			} `json:"programme"`
+		} `json:"parent"`
+	} `json:"programme"`
+}
+
+func (p *BBCProgrammeAPI) GetFileName(ext string) string {
+	episodeTitle := removeNonAlnum(p.Programme.Title)
+	showTitle := removeNonAlnum(p.Programme.DisplayTitle.Title)
+	episodeNumber := p.Programme.Position
+	seriesNumber := p.Programme.Parent.Programme.Position
+
+	var name string
+	if episodeNumber == 0 && seriesNumber == 0 {
+		// Treat as a single programme
+		name = episodeTitle
+	} else {
+		// Treat as part of a series
+		name = fmt.Sprintf(
+			"%s - s%se%s - %s",
+			showTitle,
+			leftPad(seriesNumber),
+			leftPad(episodeNumber),
+			episodeTitle,
+		)
+	}
+
+	name += ext
+
+	return name
+}
+
 type Download struct {
 	ProgrammeID string
 }
+
+type DownloadBBCProgrammeResult struct{}
 
 type DownloadByPIDResult struct {
 	ProgrammeID string
@@ -37,6 +82,16 @@ type DownloadedProgramme struct {
 	ProgrammeID string
 	SavePath    string
 	File        string
+	TargetName  string
+}
+
+type ParseDownloadedProgrammeResult struct {
+	ProgrammeID string
+	Bucket      *minio.UploadInfo
+}
+
+type ProgrammeNameResult struct {
+	Name string
 }
 
 type UploadedProgramme struct{}

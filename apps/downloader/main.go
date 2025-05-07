@@ -69,7 +69,7 @@ func main() {
 
 	w.RegisterWorkflow(workflow.DownloadBBCProgramme)
 
-	activities := workflow.NewActivities(natsClient)
+	activities := workflow.NewActivities(natsClient, cfg)
 	w.RegisterActivity(activities)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {

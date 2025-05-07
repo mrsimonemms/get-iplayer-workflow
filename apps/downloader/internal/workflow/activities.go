@@ -31,23 +31,18 @@ import (
 )
 
 type activities struct {
-	nc *nats.Conn
+	nc  *nats.Conn
+	cfg *config.Config
 }
 
 func (a *activities) DownloadByPID(ctx context.Context, download Download) (*DownloadByPIDResult, error) {
 	logger := activity.GetLogger(ctx)
 
-	cfg, err := config.Load()
-	if err != nil {
-		logger.Error("Error loading config", "error", err)
-		return nil, fmt.Errorf("error loading config: %w", err)
-	}
-
 	logger.Info("Downloading programme by PID", "pid", download.ProgrammeID)
 
 	workflowID := activity.GetInfo(ctx).WorkflowExecution.ID
 
-	savePath := path.Join(cfg.OutputDir, workflowID)
+	savePath := path.Join(a.cfg.OutputDir, workflowID)
 
 	args := []string{
 		"--nocopyright",
@@ -102,8 +97,9 @@ func (a *activities) DownloadByPID(ctx context.Context, download Download) (*Dow
 	}, nil
 }
 
-func NewActivities(nc *nats.Conn) *activities {
+func NewActivities(nc *nats.Conn, cfg *config.Config) *activities {
 	return &activities{
-		nc: nc,
+		nc:  nc,
+		cfg: cfg,
 	}
 }

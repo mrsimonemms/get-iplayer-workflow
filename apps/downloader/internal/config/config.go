@@ -37,6 +37,7 @@ type Config struct {
 	NATS     `envPrefix:"NATS_"`
 	Temporal `envPrefix:"TEMPORAL_"`
 
+	LogLevel  string `env:"LOG_LEVEL" envDefault:"info"`
 	OutputDir string `env:"OUTPUT_DIR,required"`
 }
 

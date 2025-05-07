@@ -97,6 +97,10 @@ func (a *activities) DownloadByPID(ctx context.Context, download Download) (*Dow
 	}, nil
 }
 
+func (a *activities) UploadFileToS3Bucket(ctx context.Context, programme DownloadedProgramme) (*UploadedProgramme, error) {
+	return &UploadedProgramme{}, nil
+}
+
 func NewActivities(nc *nats.Conn, cfg *config.Config) *activities {
 	return &activities{
 		nc:  nc,

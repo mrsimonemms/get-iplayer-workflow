@@ -28,6 +28,14 @@ type NATS struct {
 	URL string `env:"URL"`
 }
 
+type S3 struct {
+	AccessKeyID     string `env:"ACCESS_KEY_ID,required"`
+	Bucket          string `env:"BUCKET,required"`
+	Endpoint        string `env:"ENDPOINT,required"`
+	SecretAccessKey string `env:"SECRET_ACCESS_KEY,required"`
+	UseSSL          bool   `env:"USE_SSL" envDefault:"false"`
+}
+
 type Temporal struct {
 	Address   string `env:"ADDRESS"`
 	Namespace string `env:"NAMESPACE"`
@@ -35,6 +43,7 @@ type Temporal struct {
 
 type Config struct {
 	NATS     `envPrefix:"NATS_"`
+	S3       `envPrefix:"S3_"`
 	Temporal `envPrefix:"TEMPORAL_"`
 
 	LogLevel  string `env:"LOG_LEVEL" envDefault:"info"`

@@ -17,8 +17,12 @@
 package workflow
 
 import (
+	"context"
 	"strconv"
 	"strings"
+	"time"
+
+	"go.temporal.io/sdk/activity"
 )
 
 // Convert a number to a string and pad with 0s if less than 10
@@ -47,4 +51,30 @@ func removeNonAlnum(s string) string {
 		}
 	}
 	return result.String()
+}
+
+func startHeartbeat(ctx context.Context) chan bool {
+	logger := activity.GetLogger(ctx)
+
+	logger.Debug("Starting heatbeat")
+
+	quit := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-quit:
+				logger.Debug("Heatbeat stopped")
+				return
+			default:
+				// Heartbeats count towards the Cloud message cost
+				logger.Debug("Pausing heartbeat")
+				time.Sleep(time.Minute * 2)
+
+				logger.Debug("Sending heatbeat")
+				activity.RecordHeartbeat(ctx)
+			}
+		}
+	}()
+
+	return quit
 }

@@ -73,7 +73,7 @@ export class DownloadsService {
         regex: new RegExp(`^/programmes/(${pidRegex})`),
       },
       {
-        regex: new RegExp(`^/iplayer/episode/(${pidRegex})`),
+        regex: new RegExp(`^/iplayer/episodes?/(${pidRegex})`),
       },
     ];
 

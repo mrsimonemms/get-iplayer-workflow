@@ -10,7 +10,11 @@
     "ghcr.io/marcozac/devcontainer-features/buf:1": {},
     "ghcr.io/devcontainers-extra/features/grpcurl-asdf:2": {},
     "ghcr.io/devcontainers-extra/features/temporal-cli:1": {},
-    "ghcr.io/mrsimonemms/devcontainers/tcld:1": {}
+    "ghcr.io/mrsimonemms/devcontainers/tcld:1": {},
+    "ghcr.io/devcontainers-extra/features/gh-release:1": {
+      "repo": "gotify/cli",
+      "binaryNames": "gotify"
+    }
   },
   "customizations": {
     "vscode": {

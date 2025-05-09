@@ -65,6 +65,10 @@ describe('DownloadsService', () => {
           url: 'https://www.bbc.co.uk/iplayer/episode/b0bc5spx/the-kings-speech',
           id: 'b0bc5spx',
         },
+        {
+          url: 'https://www.bbc.co.uk/iplayer/episodes/b006t0qx/new-tricks',
+          id: 'b006t0qx',
+        },
       ];
 
       data.forEach((item) => {

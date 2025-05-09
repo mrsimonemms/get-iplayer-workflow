@@ -31,6 +31,7 @@ func DownloadBBCProgramme(ctx workflow.Context, download Download) (*DownloadBBC
 
 	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		StartToCloseTimeout: time.Hour,
+		// HeartbeatTimeout:    time.Second * 5,
 		RetryPolicy: &temporal.RetryPolicy{
 			InitialInterval:    time.Second,
 			BackoffCoefficient: 2.0,

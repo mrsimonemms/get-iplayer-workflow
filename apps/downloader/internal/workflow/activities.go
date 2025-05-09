@@ -49,6 +49,12 @@ func (a *activities) DownloadByPID(ctx context.Context, download Download) (*Dow
 
 	workflowID := activity.GetInfo(ctx).WorkflowExecution.ID
 
+	// quit := make(chan bool)
+	fmt.Println("YO YO YO")
+	defer func() {
+		fmt.Println("CLOSE WITH DEFER")
+	}()
+
 	savePath := path.Join(a.cfg.OutputDir, workflowID)
 
 	args := []string{

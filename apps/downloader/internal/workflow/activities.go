@@ -140,6 +140,7 @@ func (a *activities) GenerateProgrammeName(ctx context.Context, programme Downlo
 
 	return &ProgrammeNameResult{
 		Name: data.GetFileName(filepath.Ext(programme.File)),
+		API:  data,
 	}, nil
 }
 

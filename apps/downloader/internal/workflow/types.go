@@ -24,48 +24,6 @@ import (
 	"go.temporal.io/sdk/log"
 )
 
-type BBCProgrammeAPI struct {
-	Programme struct {
-		Position     int    `json:"position"`
-		Title        string `json:"title"`
-		DisplayTitle struct {
-			Title string `json:"title"`
-		} `json:"display_title"`
-		Parent struct {
-			Programme struct {
-				Position int    `json:"position"`
-				Title    string `json:"title"`
-			} `json:"programme"`
-		} `json:"parent"`
-	} `json:"programme"`
-}
-
-func (p *BBCProgrammeAPI) GetFileName(ext string) string {
-	episodeTitle := removeNonAlnum(p.Programme.Title)
-	showTitle := removeNonAlnum(p.Programme.DisplayTitle.Title)
-	episodeNumber := p.Programme.Position
-	seriesNumber := p.Programme.Parent.Programme.Position
-
-	var name string
-	if episodeNumber == 0 && seriesNumber == 0 {
-		// Treat as a single programme
-		name = episodeTitle
-	} else {
-		// Treat as part of a series
-		name = fmt.Sprintf(
-			"%s - s%se%s - %s",
-			showTitle,
-			leftPad(seriesNumber),
-			leftPad(episodeNumber),
-			episodeTitle,
-		)
-	}
-
-	name += ext
-
-	return name
-}
-
 type Download struct {
 	ProgrammeID string
 }
@@ -92,6 +50,7 @@ type ParseDownloadedProgrammeResult struct {
 
 type ProgrammeNameResult struct {
 	Name string
+	API  BBCProgrammeAPI
 }
 
 type UploadedProgramme struct{}

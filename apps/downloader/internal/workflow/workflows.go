@@ -113,6 +113,8 @@ func ParseDownloadedProgramme(ctx workflow.Context, programme DownloadedProgramm
 	}
 
 	// Update the audio headers
+	if programmeNameResult.API.Programme.MediaType == BBCProgrammeAPIProgrammeMediaTypeAudio {
+	}
 
 	// Upload to target location
 

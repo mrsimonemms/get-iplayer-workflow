@@ -76,6 +76,13 @@ func (a *activities) DownloadByPID(ctx context.Context, download Download) (*Dow
 		return nil, fmt.Errorf("error downloading with get_iplayer: %w", err)
 	}
 
+	// Now we've started the get_iplayer command, start the heartbeat
+	quit := startHeartbeat(ctx)
+	defer func() {
+		logger.Debug("Ending heartbeat")
+		quit <- true
+	}()
+
 	if err := cmd.Wait(); err != nil {
 		logger.Error("Error executing get_iplayer", "pid", download.ProgrammeID, "error", err)
 		return nil, fmt.Errorf("error executiing get_iplayer: %w", err)
